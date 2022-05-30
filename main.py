@@ -380,7 +380,7 @@ def vbks():
         l = cu.execute("select books.book_name,books.author,books.about,books.branch,books.inserted_by from books")
         data = cu.fetchall();
         cu.close()
-        vals = [("list-group-item list-group-item-primary"), ("list-group-item list-group-item-secondary"), ]
+        # vals = [("list-group-item list-group-item-primary"), ("list-group-item list-group-item-secondary"), ]
         hdr = ("Book", "Author", "About", "Branch", "Modified by",)
     except Exception as e:
         print("error:-", str(e))
@@ -460,7 +460,7 @@ def crss():
         # cu.execute("create database grp");
         cu.execute("use grp")
 
-        l = cu.execute("select courses.crnm,courses.fac,courses.abt from courses")
+        cu.execute("select courses.crnm,courses.fac,courses.abt from courses")
         data = cu.fetchall();
         cu.close()
 
@@ -475,7 +475,7 @@ def regcrs():
     val = request.form['crnm']
     try:
         mydb = ms.connect(host="localhost", user="root", passwd="mysql@!@");
-        cu = mydb.cursor();
+        cu = mydb.cursor()
         cu.execute("use grp")
         cu.execute(
             "select courses.crnm,courses.fac,courses.abt,courses.branch,courses.fee from courses where courses.crnm=%s",
@@ -500,6 +500,14 @@ def regcrs():
 def sc():
     return "<h1 style='color:green'>Payment successful</h1>"
 
+@app.route("/cal")
+def cals():
+    return render_template("calendar.html")
+
+# @app.route("/contact")
+# def con():
+#     return render_template("dial.html")
+
 
 @app.route("/userdet", methods=["POST", "GET"])
 def usrd():
@@ -508,7 +516,7 @@ def usrd():
         ml = request.form.get('mail')
         amt = request.form.get('amt')
         crs = request.form.get('crs')
-        print("***"*15,"name=",nm)
+        # print("***"*15,"name=",nm)
 
         response = api.payment_request_create(
             amount=amt, purpose=crs, buyer_name=nm, send_email=True, email=ml,redirect_url="http://127.0.0.1:5000/suc")
