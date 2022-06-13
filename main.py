@@ -12,6 +12,7 @@ from validate_email import validate_email
 import os, getpass, random
 from submain import submain
 from werkzeug.utils import redirect
+from flask_session import Session
 
 app = Flask(__name__)
 # app.run(host='1111')
@@ -29,6 +30,11 @@ app.config['MAIL_PASSWORD'] = 'Qwert@123'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
+
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
+
 # app.config["SESSION_PERMANENT"] = False
 # app.config["SESSION_TYPE"] = "filesystem"
 # app.secret_key="super secret"
@@ -61,11 +67,14 @@ def log():
             for i in lst:
                 if i[0] == email:
                     if i[1] == pswd1:
-                        cu.execute("select userlogin.name from userlogin where userlogin.eml=%s", (email,))
+                        cu.execute("select userlogin.name,userlogin.id from userlogin where userlogin.eml=%s", (email,))
                         p = cu.fetchall()
                         cu.execute("select books.book_name,books.author,books.about from books")
                         data = cu.fetchall();
                         # print("before returning i[0]=",i[0],"i[1]=",i[1])
+                        session["name"]=p[0][0]
+                        session["id"] = p[0][1]
+                        print("id from here: ",p[0][1] )
                         return render_template('stud.html', name=p[0][0], data=data)
                     else:
                         return "Incorrect Password"
@@ -529,6 +538,27 @@ def usrd():
     # return render_template("userDetails.html")
     # return render_template("payment.html",name=nm)
 
+
+@app.route("/profile")
+def prof():
+    try:
+        mydb = ms.connect(host="localhost", user="root", passwd="mysql@!@");
+        cu = mydb.cursor()
+        cu.execute("use grp")
+        cu.execute("select * from userlogin where userlogin.id=%s",(session["id"],))
+        data1 = cu.fetchall();print("data(from prof): ",data1)
+        cu.close()
+    except  Exception as e:print("Error from profile page as:",str(e))
+
+    return render_template("userprofile.html",data=data1)
+
+
+
+
+@app.route("/logout")
+def logout():
+    session["name"] = None
+    return redirect("/")
 
 
 # @app.route('/paydet', methods=['POST', 'GET'])
